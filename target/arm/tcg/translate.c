@@ -1148,7 +1148,12 @@ static inline void gen_hlt(DisasContext *s, int imm)
      * (and for consistency with our 32-bit semihosting).
      */
     if (semihosting_enabled(s->current_el == 0) &&
-        (imm == (s->thumb ? 0x3c : 0xf000))) {
+        ((s->thumb && imm == 0x3c) ||
+        (!s->thumb && imm == 0xf000) ||
+        semihosting_is_registered(imm))) {
+
+        TCGv_i32 tcg_svc_num = tcg_constant_i32(imm);
+        gen_helper_set_semihosting_svc_num(cpu_env, tcg_svc_num);
         gen_exception_internal_insn(s, EXCP_SEMIHOST);
         return;
     }

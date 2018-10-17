@@ -783,6 +783,8 @@ typedef struct CPUArchState {
     /* Linux syscall tagged address support */
     bool tagged_addr_enable;
 #endif
+
+    uint16_t semihost_svc_num;
 } CPUARMState;
 
 static inline void set_feature(CPUARMState *env, int feature)

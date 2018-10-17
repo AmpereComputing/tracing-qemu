@@ -26,6 +26,11 @@ typedef enum SemihostingTarget {
     SEMIHOSTING_TARGET_GDB
 } SemihostingTarget;
 
+typedef uint64_t (*semihosting_callback) (uint16_t, unsigned int);
+int semihosting_register(uint16_t svc_num, semihosting_callback cb);
+int semihosting_unregister(uint16_t svc_num);
+bool semihosting_is_registered(uint16_t svc_num);
+
 #ifdef CONFIG_USER_ONLY
 static inline bool semihosting_enabled(bool is_user)
 {

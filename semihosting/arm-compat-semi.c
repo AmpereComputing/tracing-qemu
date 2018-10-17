@@ -100,6 +100,15 @@ static int gdb_open_modeflags[12] = {
     GDB_O_RDWR | GDB_O_CREAT | GDB_O_APPEND,
 };
 
+typedef struct SemihostInfo {
+    uint16_t svc_num;
+    semihosting_callback cb;
+    QLIST_ENTRY(SemihostInfo) next;
+} SemihostInfo;
+
+static QLIST_HEAD(, SemihostInfo) semihosting_cbs =
+    QLIST_HEAD_INITIALIZER(SemihostInfo);
+
 #ifndef CONFIG_USER_ONLY
 
 /**
@@ -369,6 +378,19 @@ void do_common_semihosting(CPUState *cs)
     int nr;
     uint32_t ret;
     int64_t elapsed;
+    SemihostInfo *svc;
+
+    // Look for our registration, call ours if it exists
+    if (semihosting_is_registered(env->semihost_svc_num)) {
+        QLIST_FOREACH(svc, &semihosting_cbs, next) {
+            if (svc->svc_num == env->semihost_svc_num) {
+                if(svc->cb) {
+                    common_semi_cb(cs, svc->cb(svc->svc_num, cs->cpu_index), 0);
+                    return;
+                }
+            }
+        }
+    }
 
     nr = common_semi_arg(cs, 0) & 0xffffffffU;
     args = common_semi_arg(cs, 1);
@@ -793,4 +815,42 @@ void do_common_semihosting(CPUState *cs)
         common_semi_cb(cs, -1, EFAULT);
         break;
     }
+}
+
+int semihosting_register(uint16_t svc_num, semihosting_callback cb)
+{
+    SemihostInfo *svc;
+    if (!semihosting_enabled(false) || semihosting_is_registered(svc_num)) {
+        return -1;
+    }
+
+    svc = g_new0(SemihostInfo, 1);
+    svc->svc_num = svc_num;
+    svc->cb = cb;
+    QLIST_INSERT_HEAD(&semihosting_cbs, svc, next);
+    return 0;
+}
+
+int semihosting_unregister(uint16_t svc_num)
+{
+    SemihostInfo *svc;
+    QLIST_FOREACH(svc, &semihosting_cbs, next) {
+        if (svc->svc_num == svc_num) {
+            QLIST_REMOVE(svc, next);
+            g_free(svc);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+bool semihosting_is_registered(uint16_t svc_num)
+{
+    SemihostInfo *svc;
+    QLIST_FOREACH(svc, &semihosting_cbs, next) {
+        if (svc->svc_num == svc_num) {
+            return true;
+        }
+    }
+    return false;
 }

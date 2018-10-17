@@ -1067,3 +1067,7 @@ void HELPER(vesb)(CPUARMState *env)
         cpu_reset_interrupt(env_cpu(env), CPU_INTERRUPT_VSERR);
     }
 }
+
+void HELPER(set_semihosting_svc_num)(CPUARMState *env, uint32_t svc_num) {
+    env->semihost_svc_num = svc_num;
+}

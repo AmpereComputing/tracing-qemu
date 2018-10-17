@@ -2153,7 +2153,9 @@ static void disas_exc(DisasContext *s, uint32_t insn)
          * it is required for halting debug disabled: it will UNDEF.
          * Secondly, "HLT 0xf000" is the A64 semihosting syscall instruction.
          */
-        if (semihosting_enabled(s->current_el == 0) && imm16 == 0xf000) {
+        if (semihosting_enabled(s->current_el == 0) && (imm16 == 0xf000 || semihosting_is_registered(imm16))) {
+            TCGv_i32 tcg_svc_num = tcg_constant_i32(imm16);
+            gen_helper_set_semihosting_svc_num(cpu_env, tcg_svc_num);
             gen_exception_internal_insn(s, EXCP_SEMIHOST);
         } else {
             unallocated_encoding(s);
