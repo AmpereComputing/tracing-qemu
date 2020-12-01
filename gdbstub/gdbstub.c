@@ -45,6 +45,8 @@
 
 #include "internals.h"
 
+int gdb_read_register(CPUState *cpu, GByteArray *buf, int reg);
+
 typedef struct GDBRegisterState {
     int base_reg;
     int num_regs;
@@ -411,7 +413,7 @@ static const char *get_feature_xml(const char *p, const char **newp,
     return name ? xml_builtin[i][1] : NULL;
 }
 
-static int gdb_read_register(CPUState *cpu, GByteArray *buf, int reg)
+int gdb_read_register(CPUState *cpu, GByteArray *buf, int reg)
 {
     CPUClass *cc = CPU_GET_CLASS(cpu);
     CPUArchState *env = cpu->env_ptr;

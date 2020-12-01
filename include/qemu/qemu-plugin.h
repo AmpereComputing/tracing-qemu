@@ -11,6 +11,7 @@
 #ifndef QEMU_QEMU_PLUGIN_H
 #define QEMU_QEMU_PLUGIN_H
 
+#include <gmodule.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -480,6 +481,11 @@ uint64_t qemu_plugin_hwaddr_phys_addr(const struct qemu_plugin_hwaddr *haddr);
  * the lifetime of the plugin.
  */
 const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h);
+
+/*
+ * Inside a callback, query a register value for the current CPU
+ */
+int qemu_plugin_read_register(GByteArray *buf, int reg);
 
 /**
  * typedef qemu_plugin_vcpu_mem_cb_t - memory callback function type

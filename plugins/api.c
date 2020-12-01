@@ -358,6 +358,18 @@ const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h)
 }
 
 /*
+ * Write the value of a CPU register to mem_buf, returning the number of bytes
+ * written. (Note: The validity and assignment of the 'reg' argument vary based
+ * on the guest architecture)
+ */
+int gdb_read_register(CPUState *cpu, GByteArray *mem_buf, int reg);
+int qemu_plugin_read_register(GByteArray *mem_buf, int reg)
+{
+    CPUState *cpu = current_cpu;
+    return gdb_read_register(cpu, mem_buf, reg);
+}
+
+/*
  * Queries to the number and potential maximum number of vCPUs there
  * will be. This helps the plugin dimension per-vcpu arrays.
  */
