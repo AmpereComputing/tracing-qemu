@@ -26,6 +26,7 @@
 #include "exec/exec-all.h"
 #include "exec/tb-flush.h"
 #include "exec/helper-proto.h"
+#include "sysemu/runstate.h"
 #include "tcg/tcg.h"
 #include "tcg/tcg-op.h"
 #include "plugin.h"
@@ -486,6 +487,13 @@ void qemu_plugin_register_atexit_cb(qemu_plugin_id_t id,
                                     void *udata)
 {
     plugin_register_cb_udata(id, QEMU_PLUGIN_EV_ATEXIT, cb, udata);
+}
+
+void qemu_plugin_request_exit(void)
+{
+#ifndef CONFIG_USER_ONLY
+    qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_QMP_QUIT);
+#endif
 }
 
 /*

@@ -605,6 +605,9 @@ void qemu_plugin_register_flush_cb(qemu_plugin_id_t id,
 void qemu_plugin_register_atexit_cb(qemu_plugin_id_t id,
                                     qemu_plugin_udata_cb_t cb, void *userdata);
 
+/* Request that QEMU exit. Ineffectual in user-mode */
+void qemu_plugin_request_exit(void);
+
 /* returns -1 in user-mode */
 int qemu_plugin_n_vcpus(void);
 
