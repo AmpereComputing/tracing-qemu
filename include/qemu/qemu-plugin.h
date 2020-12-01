@@ -247,7 +247,7 @@ typedef void (*qemu_plugin_vcpu_tb_trans_cb_t)(qemu_plugin_id_t id,
  * @cb: callback function
  *
  * The @cb function is called every time a translation occurs. The @cb
- * function is passed an opaque qemu_plugin_type which it can query
+ * function is passed an opaque qemu_plugin_tb which it can query
  * for additional information including the list of translated
  * instructions. At this point the plugin can register further
  * callbacks to be triggered when the block or individual instruction
