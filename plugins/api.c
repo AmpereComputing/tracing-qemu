@@ -37,6 +37,9 @@
 #include "qemu/osdep.h"
 #include "qemu/plugin.h"
 #include "qemu/log.h"
+#include "sysemu/runstate.h"
+#include "migration/snapshot.h"
+#include "qapi/error.h"
 #include "tcg/tcg.h"
 #include "exec/exec-all.h"
 #include "exec/ram_addr.h"
@@ -368,6 +371,73 @@ int qemu_plugin_read_register(GByteArray *mem_buf, int reg)
     CPUState *cpu = current_cpu;
     return gdb_read_register(cpu, mem_buf, reg);
 }
+
+/*
+ * Save a checkpoint with the given name as soon as possible, calling cb when
+ * complete. The 'id' argument to the callback is repurposed as a status
+ * indicator since the plugin ID is unneeded (0 for success, nonzero otherwise).
+ */
+#ifdef CONFIG_USER_ONLY
+void qemu_plugin_savevm(const char *name, qemu_plugin_udata_cb_t cb, void *userdata)
+{
+    qemu_plugin_outs("WARNING: Failed to create checkpoint with QEMU usermode\n");
+    if (cb) {
+        cb(1, userdata);
+    }
+}
+#else /* System mode */
+typedef struct {
+    QEMUBH *bh;
+    const char *ckpt_name;
+    qemu_plugin_udata_cb_t cb;
+    void *userdata;
+} HandleRunBhData;
+
+/*
+ * Bottom half function that takes a checkpoint. This function runs in the
+ * main qemu thread.
+ */
+static void savevm_run_bh(void *opaque)
+{
+    /*
+     * Calling vm_stop directly, this is a quicker path of execution, however
+     * it does not check the vm state.  For example, this will break if the vm
+     * is currently migrating.  We assume the model is in running state.
+     */
+    int saved_vm_running = runstate_is_running();
+    vm_stop(RUN_STATE_SAVE_VM);
+
+    HandleRunBhData *data = opaque;
+    int error = 0;
+    Error *err = NULL;
+
+    save_snapshot(data->ckpt_name, true, NULL, false, NULL, &err);
+    if (err) {
+        error = 1;
+        error_report_err(err);
+    }
+    if (data->cb) {
+        data->cb(error, data->userdata);
+    }
+
+    qemu_bh_delete(data->bh);
+    g_free(data);
+    if (saved_vm_running) {
+        vm_start();
+    }
+}
+
+void qemu_plugin_savevm(const char *name, qemu_plugin_udata_cb_t cb, void *userdata)
+{
+    HandleRunBhData *data;
+    data = g_new(HandleRunBhData, 1);
+    data->bh = qemu_bh_new(savevm_run_bh, data);
+    data->ckpt_name = name;
+    data->cb = cb;
+    data->userdata = userdata;
+    qemu_bh_schedule(data->bh);
+}
+#endif
 
 /*
  * Queries to the number and potential maximum number of vCPUs there

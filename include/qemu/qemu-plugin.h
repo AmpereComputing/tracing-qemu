@@ -486,6 +486,12 @@ const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h);
  * Inside a callback, query a register value for the current CPU
  */
 int qemu_plugin_read_register(GByteArray *buf, int reg);
+/*
+ * Request for a checkpoint to be taken, with an optional callback to be called
+ * with the status (passed as the traditional plugin 'id'argument) and supplied
+ * userdata.
+ */
+void qemu_plugin_savevm(const char *name, qemu_plugin_udata_cb_t cb, void *userdata);
 
 /**
  * typedef qemu_plugin_vcpu_mem_cb_t - memory callback function type

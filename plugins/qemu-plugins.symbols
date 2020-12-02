@@ -38,6 +38,7 @@
   qemu_plugin_register_vcpu_tb_trans_cb;
   qemu_plugin_request_exit;
   qemu_plugin_reset;
+  qemu_plugin_savevm;
   qemu_plugin_start_code;
   qemu_plugin_tb_get_insn;
   qemu_plugin_tb_n_insns;
