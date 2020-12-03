@@ -37,6 +37,8 @@
 #include "qemu/osdep.h"
 #include "qemu/plugin.h"
 #include "qemu/log.h"
+#include "cpu.h"
+#include "exec/cpu-common.h"
 #include "sysemu/runstate.h"
 #include "migration/snapshot.h"
 #include "qapi/error.h"
@@ -357,6 +359,18 @@ const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h)
     }
 #else
     return g_intern_static_string("Invalid");
+#endif
+}
+
+int qemu_plugin_read_phys_memory(uint64_t phys_addr, uint8_t *buf,
+                                 int len, int asidx)
+{
+#ifdef CONFIG_USER_ONLY
+    qemu_plugin_outs("WARNING: Cannot read physical memory in QEMU usermode\n");
+    return -1;
+#else /* System mode */
+    CPUState *cpu = current_cpu;
+    return cpu_phys_memory_rw_debug(cpu, phys_addr, buf, len, false, asidx);
 #endif
 }
 

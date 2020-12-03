@@ -476,6 +476,9 @@ bool qemu_plugin_hwaddr_is_io(const struct qemu_plugin_hwaddr *haddr);
  */
 uint64_t qemu_plugin_hwaddr_phys_addr(const struct qemu_plugin_hwaddr *haddr);
 
+int qemu_plugin_read_phys_memory(uint64_t phys_addr, uint8_t *buf,
+                                 int len, int asidx);
+
 /*
  * Returns a string representing the device. The string is valid for
  * the lifetime of the plugin.

@@ -161,6 +161,11 @@ int ram_block_discard_range(RAMBlock *rb, uint64_t start, size_t length);
 /* Returns: 0 on success, -1 on error */
 int cpu_memory_rw_debug(CPUState *cpu, vaddr addr,
                         void *ptr, size_t len, bool is_write);
+#ifndef CONFIG_USER_ONLY
+/* Returns: 0 on success, -1 on error */
+int cpu_phys_memory_rw_debug(CPUState *cpu, hwaddr phys_addr, void *ptr,
+                             size_t len, bool is_write, int asidx);
+#endif
 
 /* vl.c */
 extern int singlestep;

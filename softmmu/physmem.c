@@ -3338,6 +3338,38 @@ int cpu_memory_rw_debug(CPUState *cpu, vaddr addr,
     return 0;
 }
 
+/* physical memory access for debug (includes writing to ROM) */
+int cpu_phys_memory_rw_debug(CPUState *cpu, hwaddr phys_addr, void *ptr,
+                             size_t len, bool is_write, int asidx)
+{
+    vaddr l, page;
+    uint8_t *buf = ptr;
+
+    cpu_synchronize_state(cpu);
+    while (len > 0) {
+        MemTxResult res;
+
+        page = phys_addr & TARGET_PAGE_MASK;
+        l = (page + TARGET_PAGE_SIZE) - phys_addr;
+        if (l > len)
+            l = len;
+        if (is_write) {
+            res = address_space_write_rom(cpu->cpu_ases[asidx].as, phys_addr,
+                                          MEMTXATTRS_UNSPECIFIED, buf, l);
+        } else {
+            res = address_space_read(cpu->cpu_ases[asidx].as, phys_addr,
+                                     MEMTXATTRS_UNSPECIFIED, buf, l);
+        }
+        if (res != MEMTX_OK) {
+            return -1;
+        }
+        len -= l;
+        buf += l;
+        phys_addr += l;
+    }
+    return 0;
+}
+
 /*
  * Allows code that needs to deal with migration bitmaps etc to still be built
  * target independent.
