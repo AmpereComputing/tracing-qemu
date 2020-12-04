@@ -45,6 +45,7 @@
 #include "tcg/tcg.h"
 #include "exec/exec-all.h"
 #include "exec/ram_addr.h"
+#include "semihosting/semihost.h"
 #include "disas/disas.h"
 #include "plugin.h"
 #ifndef CONFIG_USER_ONLY
@@ -452,6 +453,16 @@ void qemu_plugin_savevm(const char *name, qemu_plugin_udata_cb_t cb, void *userd
     qemu_bh_schedule(data->bh);
 }
 #endif
+
+int qemu_plugin_semihosting_register(uint16_t svc_num, semihosting_callback cb)
+{
+    return semihosting_register(svc_num, cb);
+}
+
+int qemu_plugin_semihosting_unregister(uint16_t svc_num)
+{
+    return semihosting_unregister(svc_num);
+}
 
 /*
  * Queries to the number and potential maximum number of vCPUs there

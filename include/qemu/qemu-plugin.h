@@ -570,6 +570,12 @@ void
 qemu_plugin_register_vcpu_syscall_ret_cb(qemu_plugin_id_t id,
                                          qemu_plugin_vcpu_syscall_ret_cb_t cb);
 
+/* Mirrors include/semihosting/semihost.h */
+typedef uint64_t (*semihosting_callback) (uint16_t, unsigned int);
+
+/* Semihosting helpers */
+int qemu_plugin_semihosting_register(uint16_t svc_num, semihosting_callback cb);
+int qemu_plugin_semihosting_unregister(uint16_t svc_num);
 
 /**
  * qemu_plugin_insn_disas() - return disassembly string for instruction
