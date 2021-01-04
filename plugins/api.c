@@ -363,6 +363,18 @@ const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h)
 #endif
 }
 
+bool qemu_plugin_virt_to_phys(uint64_t va, uint64_t *pa)
+{
+#ifdef CONFIG_USER_ONLY
+    *pa = va;
+    return true;
+#else
+    CPUState *cpu = current_cpu;
+    *pa = cpu_get_phys_page_debug(cpu, va);
+    return *pa != -1;
+#endif
+}
+
 int qemu_plugin_read_phys_memory(uint64_t phys_addr, uint8_t *buf,
                                  int len, int asidx)
 {
