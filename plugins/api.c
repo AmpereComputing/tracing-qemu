@@ -375,6 +375,12 @@ bool qemu_plugin_virt_to_phys(uint64_t va, uint64_t *pa)
 #endif
 }
 
+int qemu_plugin_read_memory(uint64_t addr, uint8_t *buf, int len)
+{
+    CPUState *cpu = current_cpu;
+    return cpu_memory_rw_debug(cpu, addr, buf, len, false);
+}
+
 int qemu_plugin_read_phys_memory(uint64_t phys_addr, uint8_t *buf,
                                  int len, int asidx)
 {

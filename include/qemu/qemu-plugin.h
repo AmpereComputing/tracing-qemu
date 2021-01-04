@@ -477,6 +477,7 @@ bool qemu_plugin_hwaddr_is_io(const struct qemu_plugin_hwaddr *haddr);
 uint64_t qemu_plugin_hwaddr_phys_addr(const struct qemu_plugin_hwaddr *haddr);
 
 bool qemu_plugin_virt_to_phys(uint64_t va, uint64_t *pa);
+int qemu_plugin_read_memory(uint64_t addr, uint8_t *buf, int len);
 int qemu_plugin_read_phys_memory(uint64_t phys_addr, uint8_t *buf,
                                  int len, int asidx);
 
