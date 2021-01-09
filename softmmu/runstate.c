@@ -819,6 +819,8 @@ void qemu_cleanup(void)
     vm_shutdown();
     replay_finish();
 
+    qemu_plugin_cleanup();
+
     job_cancel_sync_all();
     bdrv_close_all();
 

@@ -477,7 +477,7 @@ void qemu_plugin_vcpu_mem_cb(CPUState *cpu, uint64_t vaddr,
     }
 }
 
-void qemu_plugin_atexit_cb(void)
+void qemu_plugin_cleanup(void)
 {
     plugin_cb__udata(QEMU_PLUGIN_EV_ATEXIT);
 }
@@ -539,7 +539,7 @@ void qemu_plugin_user_exit(void)
     end_exclusive();
 
     /* now it's safe to handle the exit case */
-    qemu_plugin_atexit_cb();
+    qemu_plugin_cleanup();
 }
 
 /*
@@ -579,5 +579,4 @@ static void __attribute__((__constructor__)) plugin_init(void)
     QTAILQ_INIT(&plugin.ctxs);
     qht_init(&plugin.dyn_cb_arr_ht, plugin_dyn_cb_arr_cmp, 16,
              QHT_MODE_AUTO_RESIZE);
-    atexit(qemu_plugin_atexit_cb);
 }
