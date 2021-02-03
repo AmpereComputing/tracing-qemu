@@ -185,8 +185,16 @@ bool write_list_to_cpustate(ARMCPU *cpu)
          * registers where the incoming migration value doesn't match)
          */
         write_raw_cp_reg(&cpu->env, ri, v);
-        if (read_raw_cp_reg(&cpu->env, ri) != v) {
-            ok = false;
+        uint64_t read_v = read_raw_cp_reg(&cpu->env, ri);
+        if (read_v != v) {
+            if (ri->type & ARM_CP_CONST ||
+                regidx == 0x200f0802 /*AArch32 CPACR*/ ||
+                regidx == 0x1013c082 /*AArch64 CPACR*/) {
+                printf("Warning: %s was 0x%" PRIx64 " in checkpoint, but is being loaded as 0x%" PRIx64 "\n", ri->name, v, read_v);
+            } else {
+                printf("Error: %s was 0x%" PRIx64 " in checkpoint, but is being loaded as 0x%" PRIx64 "\n", ri->name, v, read_v);
+                ok = false;
+            }
         }
     }
     return ok;
