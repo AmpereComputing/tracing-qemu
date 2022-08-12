@@ -492,6 +492,11 @@ const char *qemu_plugin_hwaddr_device_name(const struct qemu_plugin_hwaddr *h);
  */
 int qemu_plugin_read_register(GByteArray *buf, int reg);
 /*
+ * Inside a callback, query the GDB XML for this CPU
+ */
+const char *qemu_plugin_read_gdb_xml(const char *xmlname);
+
+/*
  * Request for a checkpoint to be taken, with an optional callback to be called
  * with the status (passed as the traditional plugin 'id'argument) and supplied
  * userdata.

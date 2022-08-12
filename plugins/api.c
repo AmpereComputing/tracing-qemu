@@ -406,6 +406,19 @@ int qemu_plugin_read_register(GByteArray *mem_buf, int reg)
 }
 
 /*
+ * Returns string containing the GDB target description in XML format (see
+ * https://sourceware.org/gdb/onlinedocs/gdb/Target-Description-Format.html)
+ * for the current CPU given the name of the file. For example, AArch64 hosts
+ * support filenames of "target.xml", "system-registers.xml", etc. Returns NULL
+ * if no XML is available for the given name.
+ */
+const char *get_feature_xml_helper(const char *p, size_t len, CPUState *cpu);
+const char *qemu_plugin_read_gdb_xml(const char *xmlname) {
+    CPUState *cpu = current_cpu;
+    return get_feature_xml_helper(xmlname, strlen(xmlname), cpu);
+}
+
+/*
  * Save a checkpoint with the given name as soon as possible, calling cb when
  * complete. The 'id' argument to the callback is repurposed as a status
  * indicator since the plugin ID is unneeded (0 for success, nonzero otherwise).
